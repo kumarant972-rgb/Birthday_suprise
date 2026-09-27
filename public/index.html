@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Birthday Surprise — start here</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  .hero { padding: 8vh 0 4vh; text-align: center; }
+  .hero h1 { font-size: clamp(2rem, 5.5vw, 3.4rem); margin: 0 0 6px; line-height: 1.1; }
+  .hero h1 span { background: linear-gradient(120deg, var(--pink), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--muted); max-width: 620px; margin: 14px auto 26px; line-height: 1.65; }
+  .steps { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 34px; text-align: left; }
+  .step b { display: block; margin-bottom: 6px; }
+  .step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; font-weight: 800; font-size: .85rem;
+    background: linear-gradient(135deg, var(--pink), var(--gold)); color: #2a0416; margin-bottom: 10px;
+  }
+  .step p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.6; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 40px 0 30px; }
+</style>
+</head>
+<body>
+<div class="nav"><div class="nav-inner"><span class="brand"><span class="cake">🎂</span> Birthday Surprise</span>
+  <a class="btn small" href="/admin">Go to backend</a></div></div>
+
+<main class="wrap hero">
+  <span class="pill">✨ Magic password protected</span>
+  <h1>Turn your <span>memories</span> into a surprise they will never forget.</h1>
+  <p>
+    Upload their photos, write the words you never said out loud, and get one secret link.
+    The link only opens with the <b>magic password</b> you choose — so the surprise stays a surprise.
+  </p>
+  <div class="cta">
+    <a class="btn" href="/admin">Create a surprise</a>
+    <a class="btn ghost" href="/admin">I already have an account</a>
+  </div>
+
+  <div class="steps">
+    <div class="card step">
+      <span class="num">1</span>
+      <b>Log in with your mobile number</b>
+      <p>Your account and every memory live in their own folder, keyed by your mobile number. Nobody else can see them.</p>
+    </div>
+    <div class="card step">
+      <span class="num">2</span>
+      <b>Add photos &amp; their words</b>
+      <p>Each memory takes a title, the story in your own words, who wrote it, the date and up to 20 photos.</p>
+    </div>
+    <div class="card step">
+      <span class="num">3</span>
+      <b>Set the magic password</b>
+      <p>Share the secret link with the birthday person. They type the magic word and the whole surprise unfolds.</p>
+    </div>
+  </div>
+</main>
+
+<footer>Made with love · photos &amp; words are stored per mobile number on the server.</footer>
+
+<script>
+  // If a share link was pasted here by mistake, send the visitor to it.
+  const code = new URLSearchParams(location.search).get('share');
+  if (code) location.replace('/s/' + encodeURIComponent(code));
+</script>
+</body>
+</html>

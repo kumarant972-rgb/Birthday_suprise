@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Birthday Surprise — backend</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  .auth-shell { display: grid; place-items: center; min-height: 88vh; padding: 20px 0 60px; }
+  .auth-card { width: min(460px, 92vw); }
+  .auth-card h1 { margin: 4px 0 4px; font-size: 1.6rem; }
+  .auth-card .sub { color: var(--muted); font-size: .9rem; margin: 0 0 6px; line-height: 1.55; }
+  .tabs { display: flex; gap: 8px; margin: 18px 0 4px; background: rgba(0,0,0,.25); padding: 5px; border-radius: 999px; border: 1px solid var(--border); }
+  .tabs button {
+    flex: 1; appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; font-size: .9rem;
+    padding: 10px; border-radius: 999px; color: var(--muted); background: transparent; transition: .2s;
+  }
+  .tabs button.active { background: linear-gradient(135deg, var(--pink), var(--gold)); color: #2a0416; }
+  .phone-row { display: flex; gap: 8px; }
+  .phone-row select { width: 118px; flex: 0 0 auto; }
+  .hidden { display: none !important; }
+
+  /* dashboard */
+  .dash { display: grid; gap: 20px; grid-template-columns: 1.15fr .85fr; align-items: start; padding-bottom: 70px; }
+  @media (max-width: 900px) { .dash { grid-template-columns: 1fr; } }
+  h2 { font-size: 1.15rem; margin: 0 0 2px; }
+  h3 { font-size: .95rem; margin: 0 0 10px; letter-spacing: .3px; }
+  .muted { color: var(--muted); font-size: .86rem; line-height: 1.6; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .stat { flex: 1 1 110px; background: rgba(0,0,0,.25); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+  .stat b { display: block; font-size: 1.3rem; }
+  .stat span { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  .link-box { display: flex; gap: 8px; margin-top: 10px; }
+  .link-box input { font-size: .82rem; }
+
+  .previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .previews img { width: 66px; height: 66px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); }
+
+  .mem-card { border-left: 3px solid hsl(var(--hue) 85% 65%); }
+  .mem-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .mem-head h3 { margin: 0; font-size: 1.05rem; }
+  .mem-words { white-space: pre-wrap; line-height: 1.65; margin: 10px 0; }
+  .mem-meta { color: var(--muted); font-size: .78rem; }
+  .mem-photos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .mem-photos figure { margin: 0; position: relative; }
+  .mem-photos img { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); cursor: zoom-in; }
+  .mem-photos .x {
+    position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%;
+    border: 0; cursor: pointer; background: #ff5c5c; color: #fff; font-size: .72rem; line-height: 1;
+  }
+  .empty { text-align: center; padding: 26px; color: var(--muted); border: 1px dashed var(--border); border-radius: var(--radius); }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.86); display: grid; place-items: center; z-index: 70; padding: 20px; }
+  .lightbox img { max-width: 94vw; max-height: 88vh; border-radius: 14px; }
+  .lightbox.hidden { display: none; }
+
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  .range-row input[type=range] { padding: 0; height: 26px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff3; flex: 0 0 auto;
+         background: linear-gradient(135deg, hsl(var(--hue) 90% 68%), hsl(45 95% 70%)); }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<div class="nav"><div class="nav-inner">
+  <a class="brand" href="/" style="text-decoration:none;color:inherit"><span class="cake">🎂</span> Birthday Surprise</a>
+  <span id="navRight"></span>
+</div></div>
+
+<!-- ============================ AUTH SCREEN ============================ -->
+<section id="authView" class="auth-shell">
+  <div class="card auth-card">
+    <span class="pill">Backend · mobile number login</span>
+    <h1 id="authTitle">Log in</h1>
+    <p class="sub" id="authSub">Enter the mobile number you registered. Every memory is stored separately under that number.</p>
+
+    <div class="tabs">
+      <button id="tabLogin" class="active">Log in</button>
+      <button id="tabRegister">Create account</button>
+    </div>
+
+    <form id="authForm" autocomplete="on">
+      <label for="phone">Mobile number</label>
+      <div class="phone-row">
+        <select id="country">
+          <option value="91" selected>🇮🇳 +91</option>
+          <option value="1">🇺🇸 +1</option>
+          <option value="44">🇬🇧 +44</option>
+          <option value="971">🇦🇪 +971</option>
+          <option value="65">🇸🇬 +65</option>
+          <option value="61">🇦🇺 +61</option>
+          <option value="">Other / none</option>
+        </select>
+        <input id="phone" inputmode="numeric" placeholder="9876543210" required />
+      </div>
+      <p class="hint">Digits only. This number is your username and the name of your private storage folder.</p>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="At least 6 characters" required minlength="6" />
+
+      <div id="registerOnly" class="hidden">
+        <label for="displayName">Your name (optional)</label>
+        <input id="displayName" placeholder="e.g. Anu" />
+      </div>
+
+      <p class="hint" id="authErr" style="color:#ffb4b4; min-height:18px;"></p>
+      <button class="btn" id="authSubmit" style="width:100%">Log in</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============================ DASHBOARD ============================ -->
+<section id="dashView" class="wrap hidden" style="padding-top:22px">
+  <div class="dash">
+
+    <!-- ---------- left: add memory ---------- -->
+    <div class="grid">
+      <div class="card">
+        <h2>Add a memory 💌</h2>
+        <p class="muted">A photo they forgot, plus the words you always wanted to say.</p>
+        <form id="memoryForm" enctype="multipart/form-data">
+          <label for="mTitle">Memory title</label>
+          <input id="mTitle" placeholder="The first rain we danced in" required />
+
+          <label for="mWords">Their words / your words</label>
+          <textarea id="mWords" placeholder="Write it like a letter…" required></textarea>
+
+          <div class="grid two" style="gap:14px">
+            <div>
+              <label for="mAuthor">Written by</label>
+              <input id="mAuthor" placeholder="e.g. Amma, Ravi, our gang" />
+            </div>
+            <div>
+              <label for="mDate">Date / when</label>
+              <input id="mDate" type="date" />
+            </div>
+          </div>
+
+          <label for="mEmoji">Sticker for this memory</label>
+          <input id="mEmoji" value="💖" maxlength="4" />
+
+          <label for="mPhotos">Photos (up to 20, 12 MB each)</label>
+          <input id="mPhotos" type="file" accept="image/*" multiple />
+          <div class="previews" id="previewStrip"></div>
+
+          <p class="hint" id="memErr" style="color:#ffb4b4; min-height:18px;"></p>
+          <button class="btn" id="memSubmit" style="width:100%">Save memory</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Saved memories</h2>
+        <p class="muted" id="memCountLine">Loading…</p>
+        <div class="grid" id="memList" style="gap:14px"></div>
+      </div>
+    </div>
+
+    <!-- ---------- right: account + surprise ---------- -->
+    <div class="grid">
+      <div class="card">
+        <h2>Your account</h2>
+        <p class="muted">Logged in as mobile number <b id="whoPhone">—</b></p>
+        <div class="stats">
+          <div class="stat"><b id="statMemories">0</b><span>memories</span></div>
+          <div class="stat"><b id="statPhotos">0</b><span>photos</span></div>
+          <div class="stat"><b id="statSize">0 MB</b><span>storage</span></div>
+        </div>
+        <label>Private storage folder</label>
+        <input id="folderPath" readonly />
+        <div class="row-actions" style="margin-top:14px">
+          <button class="btn ghost small" id="logoutBtn">Log out</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Magic password 🔮</h2>
+        <p class="muted">The surprise page stays locked until this word is typed. Share it with them only.</p>
+        <label for="magicPassword">Set / change magic password</label>
+        <input id="magicPassword" placeholder="e.g. 07-09-mom or firstkiss" />
+        <p class="hint">Stored hashed — never sent back to any browser.</p>
+        <button class="btn small" id="saveMagic">Save magic password</button>
+      </div>
+
+      <div class="card">
+        <h2>Surprise page 🎁</h2>
+        <label>Secret link to share</label>
+        <div class="link-box">
+          <input id="shareLink" readonly />
+          <button class="btn small" id="copyLink">Copy</button>
+        </div>
+        <div class="row-actions" style="margin-top:12px">
+          <a class="btn small ghost" id="openLink" href="#" target="_blank" rel="noopener">Open preview</a>
+          <button class="btn small ghost" id="resetLink">New link</button>
+        </div>
+        <p class="hint">Anyone with this link still needs the magic password.</p>
+      </div>
+
+      <div class="card">
+        <h2>Surprise page details</h2>
+        <label for="celebrantName">Birthday person's name</label>
+        <input id="celebrantName" placeholder="e.g. Meera" />
+        <label for="birthdayDate">Birthday date</label>
+        <input id="birthdayDate" type="date" />
+        <label for="introTitle">Big headline</label>
+        <input id="introTitle" placeholder="Happy Birthday!" />
+        <label for="introMessage">Opening note</label>
+        <textarea id="introMessage" placeholder="A little note before the memories unfold…"></textarea>
+        <label for="themeHue">Theme colour</label>
+        <div class="range-row"><input id="themeHue" type="range" min="0" max="360" value="330" /><span class="dot" id="hueDot"></span></div>
+        <button class="btn small" id="saveDetails" style="margin-top:16px">Save details</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="lightbox hidden" id="lightbox"><img id="lightboxImg" alt="" /></div>
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
