@@ -35,7 +35,7 @@ function photosDir(phone) {
 
 function ensureUser(phone) {
   const dir = userDir(phone);
-  fs.mkdirSync(path.join(dir, 'photos'), { recursive: true });
+  fs.mkdirSync('/var/task/data/users', { recursive: true });
   return dir;
 }
 
